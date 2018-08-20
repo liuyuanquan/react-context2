@@ -10,18 +10,21 @@ const getDisplayName = component => {
 }
 
 const withTheme = WrappedComponent => {
-  return class HOC extends Component {
+  class HOC extends Component {
     static displayName = `HOC(${getDisplayName(WrappedComponent)})`
     render() {
       return (
         <Consumer>
           {
-            value => <WrappedComponent {...this.props} {...value}>{this.props.children}</WrappedComponent>
+            value => <WrappedComponent {...this.props} {...value} ref={this.props.forwardRef}>{this.props.children}</WrappedComponent>
           }
         </Consumer>
       )
     }
   }
+  return React.forwardRef((props, ref) => (
+    <HOC {...props} forwardRef={ref} />
+  ))
 }
 
 @withTheme
@@ -30,7 +33,7 @@ class Header extends Component {
     const { theme, handleChange } = this.props 
     return (
       <header className={theme}>
-        <label for='theme'>切换主题：</label>
+        <label htmlFor='theme'>切换主题：</label>
         <select name='theme' value={theme} onChange={handleChange}>
           <option value='dark'>dark</option>
           <option value='light'>light</option>
@@ -72,6 +75,9 @@ class App extends Component {
       theme: 'light' // dark light none
     }
     this.handleChange = this.handleChange.bind(this)
+    this.headerRef = React.createRef()
+    this.asideRef = React.createRef()
+    this.mainRef = React.createRef()
   }
   handleChange(e) {
     this.setState({
@@ -80,15 +86,15 @@ class App extends Component {
   }
   render() {
     const { theme } = this.state
-    const { handleChange } = this
+    const { handleChange, headerRef, asideRef, mainRef } = this
     return (
       <Provider value={{theme}}>
-        <Header handleChange={handleChange}/>
-        <Aside />
-        <Main />
+        <Header handleChange={handleChange} ref={headerRef}/>
+        <Aside ref={asideRef}/>
+        <Main ref={mainRef}/>
       </Provider>
     )
   }
 }
 
-export default App;
+export default App
